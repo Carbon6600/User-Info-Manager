@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Пам’ятка користувача</title>
+    <style>
+        /* Основні стилі */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            color: #333;
+            background-color: #f9f9f9;
+        }
+        h2, h3 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        h2 {
+            margin-bottom: 10px;
+        }
+        h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        input[type="text"], input[type="email"], input[type="password"], input[type="url"] {
+            width: calc(100% - 16px); /* Враховуємо padding */
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box; /* Щоб padding не додавався до ширини */
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .button-container button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .button-container button:hover {
+            opacity: 0.9;
+        }
+        .button-container .print-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .button-container .clear-button {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .button-container .add-button {
+            background-color: #3498db;
+            color: white;
+        }
+        .editable {
+            background-color: #f0f8ff;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #b3e5fc;
+        }
+        .editable:hover {
+            background-color: #e0f7fa;
+            border-color: #00bcd4;
+        }
+        .contacts {
+            margin-top: 20px;
+            text-align: left;
+            font-size: 16px;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .contacts span {
+            display: block;
+            margin-bottom: 10px;
+        }
+        .contacts[contenteditable="true"] {
+            background-color: #f0f8ff;
+            cursor: text;
+        }
+        .output-container {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .output-container p {
+            margin: 10px 0;
+        }
+        #resourceForm {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        #resourceForm label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        #resourceForm input {
+            margin-bottom: 10px;
+        }
+        #resources {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        #resources p {
+            margin: 10px 0;
+        }
+
+        /* Стилі для друку */
+        @media print {
+            body {
+                margin: 0;
+                padding: 10px;
+                font-size: 12px;
+                color: #000;
+                background-color: #fff;
+            }
+            h2, h3 {
+                font-size: 14px;
+                color: #000;
+                page-break-after: avoid;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 10px;
+                font-size: 10px;
+            }
+            th, td {
+                border: 1px solid #000;
+                padding: 6px;
+                font-size: 10px;
+            }
+            th {
+                background-color: #f2f2f2;
+                color: #000;
+            }
+            .button-container, #resourceForm, #addResourceButton {
+                display: none;
+            }
+            .output-container, .contacts, #resources {
+                padding: 5px;
+                margin-bottom: 10px;
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+            .editable {
+                background-color: transparent;
+                border: none;
+                padding: 0;
+            }
+            .page-break {
+                page-break-before: always;
+            }
+            p, span {
+                font-size: 10px;
+                margin: 5px 0;
+            }
+            a {
+                color: #000;
+                text-decoration: none;
+            }
+        }
+    </style>
+    <script>
+        function printPage() {
+            document.getElementById('resourceForm').style.display = 'none';
+            document.getElementById('addResourceButton').style.display = 'none';
+            window.print();
+        }
+
+        function clearForm() {
+            document.getElementById("userForm").reset();
+            updateOutputs();
+            document.getElementById('resourceForm').style.display = 'block';
+            document.getElementById('addResourceButton').style.display = 'block';
+        }
+
+        function updateOutputs() {
+            const login = document.querySelector('[name="login"]').value;
+            const domain = document.querySelector('[name="domain"]').value;
+            
+            document.getElementById('loginOutput').textContent = login;
+            document.getElementById('passwordOutput').textContent = document.querySelector('[name="password"]').value;
+            document.getElementById('domainOutput').textContent = domain;
+            document.getElementById('usernameOutput').textContent = `${domain}\\${login}`;
+            document.getElementById('simPasswordOutput').textContent = document.querySelector('[name="sim_password"]').value;
+            document.getElementById('tabletPasswordOutput').textContent = document.querySelector('[name="tablet_password"]').value;
+            document.getElementById('userPasswordOutput').textContent = document.querySelector('[name="password"]').value;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const formElements = document.querySelectorAll('#userForm input');
+            formElements.forEach(function(element) {
+                element.addEventListener('input', updateOutputs);
+            });
+        });
+
+        function editText(element) {
+            const newText = prompt("Введіть нове значення:", element.textContent);
+            if (newText !== null && newText !== "") {
+                element.textContent = newText;
+            }
+        }
+
+        function editCompanyTitle() {
+            const companyTitle = document.getElementById('companyTitle');
+            const newTitle = prompt("Введіть нову назву компанії:", companyTitle.textContent);
+            if (newTitle !== null && newTitle !== "") {
+                companyTitle.textContent = newTitle;
+            }
+        }
+
+        function editResourceName(element) {
+            const newResourceName = prompt("Введіть нову назву ресурсу:", element.textContent);
+            if (newResourceName !== null && newResourceName !== "") {
+                element.textContent = newResourceName;
+            }
+        }
+
+        function addResource() {
+            const resourceName = document.querySelector('[name="resourceName"]').value;
+            const resourceUrl = document.querySelector('[name="resourceUrl"]').value;
+
+            if (resourceName && resourceUrl) {
+                const resourcesDiv = document.getElementById('resources');
+                const newResource = document.createElement('p');
+                newResource.innerHTML = `<span class="editable" ondblclick="editResourceName(this)">${resourceName} - <a href="${resourceUrl}" target="_blank">${resourceUrl}</a></span>`;
+                resourcesDiv.appendChild(newResource);
+                document.querySelector('[name="resourceName"]').value = '';
+                document.querySelector('[name="resourceUrl"]').value = '';
+            }
+        }
+
+        function toggleResourceForm() {
+            const resourceForm = document.getElementById('resourceForm');
+            const addResourceButton = document.getElementById('addResourceButton');
+            const isHidden = resourceForm.style.display === 'none';
+
+            resourceForm.style.display = isHidden ? 'block' : 'none';
+            addResourceButton.textContent = isHidden ? 'Сховати форму додавання' : 'Додати ресурс';
+        }
+
+        function enableContactEdit() {
+            const contactBlock = document.querySelector('.contacts');
+            contactBlock.setAttribute('contenteditable', 'true');
+            contactBlock.focus();
+        }
+    </script>
+</head>
+<body>
+    <h2 id="companyTitle" class="editable" ondblclick="editCompanyTitle()">Компанія</h2>
+    <h3>Пам’ятка користувача</h3>
+
+    <form id="userForm">
+        <table>
+            <tr>
+                <th>Поле</th>
+                <th>Значення</th>
+            </tr>
+            <tr>
+                <td>Повне ім'я</td>
+                <td><input type="text" name="full_name" required></td>
+            </tr>
+            <tr>
+                <td>Пошта</td>
+                <td><input type="email" name="email" required></td>
+            </tr>
+            <tr>
+                <td>Логін</td>
+                <td><input type="text" name="login" required></td>
+            </tr>
+            <tr>
+                <td>Пароль</td>
+                <td><input type="password" name="password" required></td>
+            </tr>
+            <tr>
+                <td>Домен</td>
+                <td><input type="text" name="domain" required></td>
+            </tr>
+            <tr>
+                <td>Пароль від SIM картки</td>
+                <td><input type="text" name="sim_password" value="0000"></td>
+            </tr>
+            <tr>
+                <td>Пароль від планшету</td>
+                <td><input type="text" name="tablet_password" value="0000"></td>
+            </tr>
+            <tr>
+                <td>Пароль користувача</td>
+                <td><input type="text" name="user_password" value="0000"></td>
+            </tr>
+        </table>
+
+        <div class="output-container">
+            <p><strong>Логін -</strong> <span id="loginOutput" class="editable" ondblclick="editText(this)"></span></p>
+            <p><strong>Пароль -</strong> <span id="passwordOutput" class="editable" ondblclick="editText(this)"></span></p>
+            <p><strong>Домен -</strong> <span id="domainOutput" class="editable" ondblclick="editText(this)"></span></p>
+            <p><strong>Ім'я користувача -</strong> <span id="usernameOutput" class="editable" ondblclick="editText(this)"></span></p>
+            <p><strong>Пароль SIM картки -</strong> <span id="simPasswordOutput" class="editable" ondblclick="editText(this)"></span></p>
+            <p><strong>Пароль планшету -</strong> <span id="tabletPasswordOutput" class="editable" ondblclick="editText(this)"></span></p>
+            <p><strong>Пароль користувача -</strong> <span id="userPasswordOutput" class="editable" ondblclick="editText(this)"></span></p>
+        </div>
+    </form>
+
+    <div id="resources">
+        <h3>Ресурси</h3>
+        <p class="editable" ondblclick="editResourceName(this)">Ресурс 1 - <a href="https://example.com" target="_blank">https://example.com</a></p>
+    </div>
+
+    <div id="resourceForm" style="display:none">
+        <label for="resourceName">Назва ресурсу:</label>
+        <input type="text" name="resourceName">
+        <label for="resourceUrl">URL ресурсу:</label>
+        <input type="url" name="resourceUrl">
+        <button type="button" onclick="addResource()">Додати ресурс</button>
+    </div>
+
+    <div class="contacts" ondblclick="enableContactEdit()">
+        <h3>Контакти</h3>
+        <span>Контакт 1: johndoe@example.com</span>
+        <span>Контакт 2: janedoe@example.com</span>
+    </div>
+
+    <div class="button-container">
+        <button class="print-button" onclick="printPage()">Друк</button>
+        <button class="clear-button" onclick="clearForm()">Очистити</button>
+        <button class="add-button" onclick="toggleResourceForm()" id="addResourceButton">Додати ресурс</button>
+    </div>
+</body>
+</html>
