@@ -39,7 +39,7 @@
             background-color: #4CAF50;
             color: white;
         }
-        input[type="text"], input[type="email"], input[type="password"], input[type="url"] {
+        input[type="text"], input[type="email"], input[type="password"], input[type="url"], textarea {
             width: calc(100% - 16px); /* Враховуємо padding */
             padding: 8px;
             border: 1px solid #ddd;
@@ -73,6 +73,14 @@
         }
         .button-container .add-button {
             background-color: #3498db;
+            color: white;
+        }
+        .button-container .autofill-button {
+            background-color: #9b59b6;
+            color: white;
+        }
+        .button-container .test-button {
+            background-color: #f39c12;
             color: white;
         }
         .editable {
@@ -128,6 +136,19 @@
         #resourceForm input {
             margin-bottom: 10px;
         }
+        #resourceForm button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #3498db;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        #resourceForm button:hover {
+            background-color: #2980b9;
+        }
         #resources {
             background-color: #fff;
             padding: 15px;
@@ -137,6 +158,42 @@
         }
         #resources p {
             margin: 10px 0;
+        }
+        #autofillForm {
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            display: none;
+        }
+        #autofillForm textarea {
+            height: 100px;
+            margin-bottom: 10px;
+        }
+        #autofillForm button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #27ae60;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        #autofillForm button:hover {
+            background-color: #219150;
+        }
+
+        /* Стилі для зображення */
+        #companyTitle img {
+            max-width: 150px; /* Стандартна ширина логотипу */
+            height: auto;
+            border-radius: 4px;
+            margin-top: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         /* Стилі для друку */
@@ -168,7 +225,7 @@
                 background-color: #f2f2f2;
                 color: #000;
             }
-            .button-container, #resourceForm, #addResourceButton {
+            .button-container, #resourceForm, #addResourceButton, #autofillForm {
                 display: none;
             }
             .output-container, .contacts, #resources {
@@ -193,12 +250,18 @@
                 color: #000;
                 text-decoration: none;
             }
+            #companyTitle img {
+                max-width: 100px; /* Зменшений розмір для друку */
+                height: auto;
+                margin: 10px auto; /* Центрування зображення */
+            }
         }
     </style>
     <script>
         function printPage() {
             document.getElementById('resourceForm').style.display = 'none';
             document.getElementById('addResourceButton').style.display = 'none';
+            document.getElementById('autofillForm').style.display = 'none';
             window.print();
         }
 
@@ -207,6 +270,7 @@
             updateOutputs();
             document.getElementById('resourceForm').style.display = 'block';
             document.getElementById('addResourceButton').style.display = 'block';
+            document.getElementById('autofillForm').style.display = 'none';
         }
 
         function updateOutputs() {
@@ -238,9 +302,16 @@
 
         function editCompanyTitle() {
             const companyTitle = document.getElementById('companyTitle');
-            const newTitle = prompt("Введіть нову назву компанії:", companyTitle.textContent);
-            if (newTitle !== null && newTitle !== "") {
-                companyTitle.textContent = newTitle;
+            const newContent = prompt("Введіть нову назву компанії або URL зображення:", companyTitle.textContent);
+
+            if (newContent !== null && newContent !== "") {
+                if (newContent.startsWith("http") && (newContent.endsWith(".jpg") || newContent.endsWith(".png") || newContent.endsWith(".jpeg"))) {
+                    // Якщо введено URL зображення
+                    companyTitle.innerHTML = `<img src="${newContent}" alt="Логотип компанії">`;
+                } else {
+                    // Якщо введено текст
+                    companyTitle.textContent = newContent;
+                }
             }
         }
 
@@ -278,6 +349,129 @@
             const contactBlock = document.querySelector('.contacts');
             contactBlock.setAttribute('contenteditable', 'true');
             contactBlock.focus();
+            contactBlock.style.backgroundColor = '#e0f7fa';
+            contactBlock.style.borderColor = '#00bcd4';
+        }
+
+        function disableContactEdit() {
+            const contactBlock = document.querySelector('.contacts');
+            contactBlock.setAttribute('contenteditable', 'false');
+            contactBlock.style.backgroundColor = '#fff';
+            contactBlock.style.borderColor = '#ddd';
+        }
+
+        document.addEventListener('click', function(event) {
+            const contactBlock = document.querySelector('.contacts');
+            if (!contactBlock.contains(event.target)) {
+                disableContactEdit();
+            }
+        });
+
+        function toggleAutofillForm() {
+            const autofillForm = document.getElementById('autofillForm');
+            const autofillButton = document.querySelector('.autofill-button');
+            const isHidden = autofillForm.style.display === 'none';
+
+            autofillForm.style.display = isHidden ? 'block' : 'none';
+            autofillButton.textContent = isHidden ? 'Сховати автозаповнення' : 'Автозаповнення';
+        }
+
+        function autofillForm() {
+            const autofillData = document.getElementById('autofillData').value;
+            const lines = autofillData.split('\n');
+
+            const fields = [
+                'full_name', 'email', 'login', 'password', 'domain',
+                'sim_password', 'tablet_password', 'user_password'
+            ];
+
+            fields.forEach((field, index) => {
+                if (lines[index]) {
+                    document.querySelector(`[name="${field}"]`).value = lines[index].trim();
+                }
+            });
+
+            updateOutputs();
+            document.getElementById('autofillForm').style.display = 'none';
+            document.querySelector('.autofill-button').textContent = 'Автозаповнення';
+        }
+
+        // Функція для поступового заповнення поля
+        function typeText(element, text, delay, callback) {
+            let i = 0;
+            const typingInterval = setInterval(() => {
+                if (i < text.length) {
+                    element.value += text[i];
+                    i++;
+                } else {
+                    clearInterval(typingInterval);
+                    if (callback) callback();
+                }
+            }, delay);
+        }
+
+        // Функція для заповнення тестовими даними з ефектом набору тексту
+        function fillTestData() {
+            const testData = {
+                full_name: "Томас Андерсон",
+                email: "neo@matrix.com",
+                login: "Neo",
+                password: "RedPill123",
+                domain: "matrix.com",
+                sim_password: "101010",
+                tablet_password: "202020",
+                user_password: "303030"
+            };
+
+            const fields = [
+                { name: 'full_name', value: testData.full_name },
+                { name: 'email', value: testData.email },
+                { name: 'login', value: testData.login },
+                { name: 'password', value: testData.password },
+                { name: 'domain', value: testData.domain },
+                { name: 'sim_password', value: testData.sim_password },
+                { name: 'tablet_password', value: testData.tablet_password },
+                { name: 'user_password', value: testData.user_password }
+            ];
+
+            let currentFieldIndex = 0;
+
+            function fillNextField() {
+                if (currentFieldIndex < fields.length) {
+                    const field = fields[currentFieldIndex];
+                    const inputElement = document.querySelector(`[name="${field.name}"]`);
+                    inputElement.value = ''; // Очистити поле перед заповненням
+                    typeText(inputElement, field.value, 100, () => {
+                        currentFieldIndex++;
+                        fillNextField();
+                    });
+                } else {
+                    // Оновлюємо виведені дані
+                    updateOutputs();
+
+                    // Заповнюємо контакти
+                    const contactBlock = document.querySelector('.contacts');
+                    contactBlock.innerHTML = `
+                        <h3>Контакти</h3>
+                        <span>Морфіус: morphius@matrix.com</span>
+                        <span>Триніті: trinity@matrix.com</span>
+                    `;
+
+                    // Додаємо ресурси
+                    const resourcesDiv = document.getElementById('resources');
+                    resourcesDiv.innerHTML = `
+                        <h3>Ресурси</h3>
+                        <p class="editable" ondblclick="editResourceName(this)">Зелена пігулка - <a href="https://matrix.com/green" target="_blank">https://matrix.com/green</a></p>
+                        <p class="editable" ondblclick="editResourceName(this)">Червона пігулка - <a href="https://matrix.com/red" target="_blank">https://matrix.com/red</a></p>
+                    `;
+
+                    // Вставляємо логотип
+                    const companyTitle = document.getElementById('companyTitle');
+                    companyTitle.innerHTML = `<img src="https://www.pngarts.com/files/9/Matrix-Logo-PNG-Photo.png" alt="Логотип Матриці">`;
+                }
+            }
+
+            fillNextField();
         }
     </script>
 </head>
@@ -349,6 +543,12 @@
         <button type="button" onclick="addResource()">Додати ресурс</button>
     </div>
 
+    <div id="autofillForm">
+        <label for="autofillData">Вставте дані для автозаповнення (кожен рядок - нове поле):</label>
+        <textarea id="autofillData" placeholder="Повне ім'я\nПошта\nЛогін\nПароль\nДомен\nПароль SIM\nПароль планшету\nПароль користувача"></textarea>
+        <button type="button" onclick="autofillForm()">Застосувати</button>
+    </div>
+
     <div class="contacts" ondblclick="enableContactEdit()">
         <h3>Контакти</h3>
         <span>Контакт 1: johndoe@example.com</span>
@@ -359,6 +559,8 @@
         <button class="print-button" onclick="printPage()">Друк</button>
         <button class="clear-button" onclick="clearForm()">Очистити</button>
         <button class="add-button" onclick="toggleResourceForm()" id="addResourceButton">Додати ресурс</button>
+        <button class="autofill-button" onclick="toggleAutofillForm()">Автозаповнення</button>
+        <button class="test-button" onclick="fillTestData()">Тест</button>
     </div>
 </body>
 </html>
